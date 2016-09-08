@@ -1,0 +1,25 @@
+{
+  "manifest_version": 2,
+  "name": "Patch",
+  "version": "0.0.1",
+  "description": "Inject CSS/JS to page",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "author": "kXuan <kxuanobj@gmail.com>",
+  "background": {
+    "scripts": [
+      "background/storage.js",
+      "background/tabs.js",
+      "background/eventScript.js"
+    ],
+    "persistent": false
+  },
+  "permissions": [
+    "tabs",
+    "unlimitedStorage",
+    "*://*/"
+  ]
+}
