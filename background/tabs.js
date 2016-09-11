@@ -8,15 +8,13 @@ chrome.tabs.onUpdated.addListener(onUpdated);
  */
 function onUpdated(tabId, changeInfo, tab) {
     switch (changeInfo.status) {
-        case 'complete':
+        case 'loading':
             console.log("Tab[%d]", tabId);
             var start_time = Date.now();
             doPatch(tab).then(function (rc) {
                 var end_time = Date.now();
                 console.log("[Tab - %s] %d patchs applied(%d ms)", tab.title, rc.length, end_time - start_time);
             });
-            break;
-        case 'loading':
             break;
     }
 }
