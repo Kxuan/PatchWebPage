@@ -49,7 +49,7 @@ function applyPatch(patch) {
                 });
                 break;
             case 'js':
-                chrome.tabs.insertCSS(this.id, {
+                chrome.tabs.executeScript(this.id, {
                     code: patch.code,
                     allFrames: true,
                     matchAboutBlank: true,
