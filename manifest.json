@@ -9,9 +9,10 @@
     "128": "icon128.png"
   },
   "author": "kXuan <kxuanobj@gmail.com>",
+  "options_page": "options/page.html",
   "background": {
     "scripts": [
-      "background/storage.js",
+      "common/storage.js",
       "background/tabs.js",
       "background/eventScript.js"
     ],

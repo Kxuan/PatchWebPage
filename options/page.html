@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Auto Patch Setting</title>
+
+    <script type="text/javascript" src="vue.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="bootstrap.min.css"/>
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="tether.min.js"></script>
+    <script type="text/javascript" src="bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="../common/storage.js"></script>
+</head>
+<body>
+<table class="table table-bordered" id="patch_list">
+    <thead>
+    <tr>
+        <td>Host</td>
+        <td>URL RegExp</td>
+        <td>Type</td>
+        <td>Code</td>
+        <td>Actions</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr v-for="patch in patches"
+        :class="{'table-info': patch.ischanged && !patch.isMatcherError, 'table-danger': patch.isMatcherError}">
+        <td><input class="form-control" v-model="patch.host" @change="markChanged(patch)" @keydown="markChanged(patch)">
+        </td>
+        <td>
+            <div class="form-group" :class="{'has-danger': patch.isMatcherError}">
+                <input class="form-control" :class="{'form-control-danger': patch.isMatcherError}"
+                       v-model="patch.matcher" @change="markChanged(patch)" @keydown="markChanged(patch)">
+            </div>
+        </td>
+        <td><select class="form-control" v-model="patch.type" @change="markChanged(patch)">
+            <option value="css">CSS</option>
+            <option value="js">JavaScript</option>
+        </select></td>
+        <td><textarea title="Code" class="form-control" v-model="patch.code"
+                      @change="markChanged(patch)" @keydown="markChanged(patch)"></textarea>
+        </td>
+        <td><button type="button" class="btn-danger" @click="doDelete(patch)">Delete</button></td>
+    </tr>
+    </tbody>
+</table>
+<button type="button" class="btn btn-primary" id="btn_add">Add</button>
+<button type="button" class="btn btn-primary" id="btn_save">Save</button>
+<script type="text/javascript" src="option.js"></script>
+</body>
+</html>

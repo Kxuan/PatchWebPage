@@ -22,7 +22,7 @@ function PatchStorage() {
             });
             db_req.addEventListener("upgradeneeded", function (ev) {
                 var db = ev.target.result;
-                PatchStorage.upgrade(db, ev.oldVersion, ev.newVersion);
+                PatchStorage._upgrade(db, ev.oldVersion, ev.newVersion);
             })
         });
     }
@@ -55,6 +55,26 @@ function openStore(db, storeName, access) {
         var trans = db.transaction(storeName, access);
         var store = trans.objectStore(storeName);
         onAccept(store);
+    })
+}
+function packRequest(request) {
+    return new Promise(function (onAccept, onReject) {
+        request.onsuccess = onAccept;
+        request.onerror = onReject;
+    })
+}
+function packCursorRequest(request, ondata) {
+    return new Promise(function (onAccept, onReject) {
+        request.onsuccess = function (ev) {
+            var cursor = ev.target.result;
+            if (cursor) {
+                ondata(cursor.key, cursor.value);
+                cursor.continue();
+            } else {
+                onAccept();
+            }
+        };
+        request.onerror = onReject;
     })
 }
 PatchStorage.prototype.query = function (url) {
@@ -96,7 +116,6 @@ PatchStorage.prototype.query = function (url) {
             });
             return Promise.all(reqs);
         });
-
 };
 PatchStorage.prototype.add = function (item) {
     return this.getDb().then(function (db) {
@@ -109,8 +128,66 @@ PatchStorage.prototype.add = function (item) {
         });
     })
 };
+/**
+ *
+ * @param {object[]} items
+ */
+PatchStorage.prototype.setOrAddAll = function (items) {
+    var store;
+    var itemsToAdd = [], itemsToSet = [];
+    items.forEach(function (p) {
+        if (p.key) itemsToSet.push(p);
+        else itemsToAdd.push(p);
+    });
 
-PatchStorage.upgrade = function (db, from, to) {
+    return this.getDb().then(function (db) {
+        return openStore(db, "matches", "readwrite");
+    }).then(function (result) {
+        store = result;
+        return Promise.all(items.map(function (p) {
+            return packRequest(store.put(p,p.key))
+        }))
+    })
+};
+PatchStorage.prototype.deleteAll=function (keys) {
+    return this.getDb().then(function (db) {
+        return openStore(db, "matches", "readwrite");
+    }).then(function (store) {
+        return Promise.all(keys.map(function (key) {
+            return packRequest(store.delete(key));
+        }))
+    });
+};
+
+PatchStorage.prototype.getAll = function () {
+    var store;
+    var data, i = 0;
+
+    return this.getDb()
+        .then(function (db) {
+            return openStore(db, 'matches', "readonly");
+        })
+        .then(function (result) {
+            store = result;
+            return packRequest(store.count())
+        })
+        .then(function (result) {
+            data = new Array(result);
+            var request = store.openCursor();
+            return packCursorRequest(request, function (k, v) {
+                Object.defineProperty(v, "key", {
+                    value: k,
+                    writable: false,
+                    enumerable: false
+                });
+                data[i++] = v;
+            })
+        })
+        .then(function () {
+            return Promise.resolve(data);
+        })
+};
+PatchStorage._upgrade = function (db, from, to) {
     switch (from) {
         //case 0:
         default:
