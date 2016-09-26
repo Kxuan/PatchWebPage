@@ -115,6 +115,11 @@ PatchStorage.prototype.query = function (url) {
 
             });
             return Promise.all(reqs);
+        })
+        .then(function(results){
+            return Promise.resolve(results.filter(function(p){
+                return url.match(p.matcher);
+            }));
         });
 };
 PatchStorage.prototype.add = function (item) {
@@ -204,5 +209,5 @@ PatchStorage._upgrade = function (db, from, to) {
 };
 
 function isHostMatch(host, match) {
-    return host == match || host.endsWith("." + match);
+    return !match || host == match || host.endsWith("." + match);
 }
